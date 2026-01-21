@@ -1,0 +1,29 @@
+name: Docker Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "app/**"
+      - "docker/**"
+      - ".github/workflows/docker-build.yml"
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (linux/amd64)
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            -f app/Dockerfile \
+            -t project2-api:${{ github.sha }} \
+            app
