@@ -19,3 +19,8 @@ resources:
 ingress:
   host: project2.local
 
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 60
