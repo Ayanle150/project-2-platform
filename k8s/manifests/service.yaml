@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: project2-api
+  namespace: p2
+spec:
+  selector:
+    app: project2-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
