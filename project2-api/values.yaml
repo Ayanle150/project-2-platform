@@ -1,5 +1,8 @@
 replicaCount: 1
 
+ # Image defaults for local/dev usage.
+ # In CI/CD, the deployed image tag is typically overridden (e.g. --set image.tag=<github.sha>)
+ # to ensure traceable, immutable deployments.
 image:
   repository: project2-api
   tag: "latest"
