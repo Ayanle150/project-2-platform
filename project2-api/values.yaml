@@ -1,8 +1,8 @@
 replicaCount: 1
 
 image:
-  repository: p2acrdev59327.azurecr.io/project2-api
-  tag: latest
+  repository: project2-api
+  tag: "latest"
   pullPolicy: IfNotPresent
 
 app:
