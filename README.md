@@ -50,6 +50,15 @@ In progress / planned:
 - Automated deployments
 - Observability and secrets management
 
+##  Azure deployment (AKS + ACR)
+This project is Azure-first and targets deployment to AKS with images stored in ACR.
+CD is implemented as a GitHub Actions workflow using OIDC (federated identity) and Helm releases.
+
+Due to restricted permissions in the student tenant (App registration / SP creation),
+the Azure CD workflow is gated until the required identity configuration is available.
+The repository includes the full target workflow and required configuration under
+`docs/azure-vars.md`.
+
 ##  Security model
 - Identity-based authentication (OIDC) for CI/CD  
 - No long-lived secrets in pipelines  

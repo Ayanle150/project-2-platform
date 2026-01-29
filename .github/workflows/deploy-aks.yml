@@ -1,0 +1,111 @@
+name: CD (Azure AKS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+      image_tag:
+        description: "Image tag to deploy (default: commit SHA)"
+        required: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Guard - ensure Azure config exists
+        run: |
+          missing=0
+          for v in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID AZURE_ACR_NAME AKS_RESOURCE_GROUP AKS_CLUSTER_NAME; do
+            if [ -z "${!v}" ]; then
+              echo "Missing required secret/var: $v"
+              missing=1
+            fi
+          done
+          if [ "$missing" -eq 1 ]; then
+            echo ""
+            echo "Azure CD is not configured yet. This is expected in restricted student tenants."
+            echo "See docs/azure-vars.md for required configuration."
+            exit 1
+          fi
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+          AKS_RESOURCE_GROUP: ${{ vars.AKS_RESOURCE_GROUP }}
+          AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
+
+      - name: Set image tag
+        id: img
+        run: |
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            echo "tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        run: |
+          az acr login --name ${{ vars.AZURE_ACR_NAME }}
+
+      - name: Build and push image to ACR
+        run: |
+          ACR="${{ vars.AZURE_ACR_NAME }}.azurecr.io"
+          IMAGE="$ACR/project2-api:${{ steps.img.outputs.tag }}"
+
+          docker build -t "$IMAGE" -f app/Dockerfile app
+          docker push "$IMAGE"
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ vars.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.AKS_CLUSTER_NAME }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy (Helm upgrade)
+        run: |
+          NS="p2-${{ inputs.environment }}"
+          ACR="${{ vars.AZURE_ACR_NAME }}.azurecr.io"
+
+          kubectl get ns "$NS" >/dev/null 2>&1 || kubectl create ns "$NS"
+
+          helm upgrade --install project2-api ./project2-api \
+            --namespace "$NS" \
+            --set image.repository="$ACR/project2-api" \
+            --set image.tag="${{ steps.img.outputs.tag }}"
+
+      - name: Rollout status
+        run: |
+          NS="p2-${{ inputs.environment }}"
+          kubectl -n "$NS" rollout status deploy/project2-api --timeout=180s
+          kubectl -n "$NS" get pods -o wide
+
+      - name: Rollback hint
+        if: failure()
+        run: |
+          NS="p2-${{ inputs.environment }}"
+          echo "If needed:"
+          echo "helm -n $NS history project2-api"
+          echo "helm -n $NS rollback project2-api <REVISION>"
