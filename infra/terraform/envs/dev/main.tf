@@ -11,6 +11,14 @@ resource "azurerm_container_registry" "p2_acr" {
   admin_enabled       = false
 }
 
+resource "azurerm_log_analytics_workspace" "p2_law" {
+  name                = "p2-law-1769788039"
+  location            = azurerm_resource_group.p2_dev.location
+  resource_group_name = azurerm_resource_group.p2_dev.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
 resource "azurerm_kubernetes_cluster" "p2_aks" {
   name                = "aks-p2-dev"
   location            = azurerm_resource_group.p2_dev.location
@@ -42,6 +50,11 @@ resource "azurerm_kubernetes_cluster" "p2_aks" {
   network_profile {
     network_plugin = "azure"
     network_plugin_mode = "overlay"
+  }
+
+  oms_agent {
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.p2_law.id
+    msi_auth_for_monitoring_enabled = true
   }
 
   linux_profile {
