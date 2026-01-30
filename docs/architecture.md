@@ -4,7 +4,7 @@ This document describes the target platform architecture and delivery flow for t
 
 ---
 
-## 🏗️ High-level overview
+## High-level overview
 
 The platform is designed as a cloud-native delivery system that automates the full lifecycle of an application:
 
@@ -19,7 +19,7 @@ and automate the interfaces between them.
 
 ---
 
-## 🔁 Delivery flow
+## Delivery flow
 
 1. Developer pushes code to GitHub  
 2. GitHub Actions CI validates the codebase  
@@ -33,7 +33,7 @@ and automate the interfaces between them.
 
 ---
 
-## ☁️ Cloud platform components
+## Cloud platform components
 
 - **Azure Kubernetes Service (AKS)**  
   Managed Kubernetes cluster hosting application workloads.
@@ -52,7 +52,7 @@ and automate the interfaces between them.
 
 ---
 
-## 🔐 Security architecture
+## Security architecture
 
 - Federated identity (OIDC) from GitHub to Azure  
 - Azure RBAC for scoped permissions  
@@ -61,7 +61,7 @@ and automate the interfaces between them.
 
 ---
 
-## 📐 Architecture diagram
+## Architecture diagram
 
 The target architecture is visualized below (Mermaid):
 
@@ -78,7 +78,7 @@ graph TD
 
 ---
 
-## 🧭 Platform boundaries
+## Platform boundaries
 
 - Application teams own:  
   source code, tests, container image
@@ -91,7 +91,7 @@ graph TD
 
 ---
 
-## 📈 Evolution roadmap
+## Evolution roadmap
 
 - Remote Terraform state + environment promotion  
 - OIDC GitHub → Azure authentication  
@@ -102,7 +102,7 @@ graph TD
 
 ---
 
-## 📐 Architecture diagram (Mermaid)
+## Architecture diagram (Mermaid)
 
 ```mermaid
 flowchart LR
