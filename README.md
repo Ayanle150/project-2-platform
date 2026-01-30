@@ -15,7 +15,6 @@ automated CI/CD.
 - **Health probes** (readiness/liveness)
 - **Resource limits/requests**
 - **Autoscaling** via **HPA**
-- *(Next)* Terraform provisioning + GitHub Actions CI/CD to AKS
 
 ## 🎬 Demo (2 min)
 1) Build image
@@ -48,8 +47,26 @@ curl http://project2.local:8080/health
 - `app/` — FastAPI source + Dockerfile
 - `project2-api/` — Helm chart (single source of truth for k8s resources)
 - `docs/` — architecture + runbook (WIP)
-- `infra/` — Terraform (WIP)
+- `infra/` — Terraform (dev/prod envs)
 - `.github/workflows/` — CI/CD pipelines (GitHub Actions)
+
+## How it works (CI/CD flow)
+1. Developer pushes code to GitHub  
+2. **CI** builds + basic checks + Docker build  
+3. **CD** (manual) builds/pushes image to **ACR** and deploys to **AKS** via **Helm**  
+4. **Observability** via Azure Monitor / Log Analytics (Container Insights)
+
+## Environments
+- `infra/terraform/envs/dev` — imported existing infra, remote state in Azure Storage
+- `infra/terraform/envs/prod` — separate env with its own backend + variables
+
+Prod quick start (after updating backend + tfvars):
+```bash
+cd infra/terraform/envs/prod
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform plan
+```
 
 ##  Project documentation
 -  [Platform architecture](docs/architecture.md)  
@@ -60,22 +77,6 @@ curl http://project2.local:8080/health
 
 ##  Architecture diagram
 See the rendered diagram in `docs/architecture.md` (Mermaid).
-
-##  Platform maturity
-This repository is structured as a real platform engineering project.
-
-Implemented:
-- CI pipelines (build + docker)
-- Containerized application
-- Terraform AKS foundation
-- Helm charts and ingress manifests
-- Architecture documentation
-
-In progress / planned:
-- OIDC GitHub → Azure authentication
-- ACR integration
-- Automated deployments
-- Observability and secrets management
 
 ##  Azure deployment (AKS + ACR)
 This project is Azure-first and targets deployment to AKS with images stored in ACR.
@@ -99,6 +100,27 @@ To activate the gated Azure workflow:
 - No long-lived secrets in pipelines  
 - Azure RBAC and least-privilege access  
 - Infrastructure defined and reviewed as code  
+
+## Observability (Azure Monitor)
+Container Insights is enabled and logs flow to Log Analytics.
+
+KQL example:
+```kql
+KubePodInventory
+| where ClusterName == "aks-p2-dev"
+| summarize count() by Namespace
+```
+
+## Runbook (short)
+- **Deploy:** Run GitHub Actions → `CD (Azure AKS)` (workflow_dispatch)  
+- **Rollback:** `helm -n p2-dev history project2-api` → `helm -n p2-dev rollback project2-api <REV>`  
+- **Troubleshoot:** `kubectl -n p2-dev get pods` + `kubectl -n p2-dev logs deploy/project2-api`
+
+## Cost (quick notes)
+- AKS: single node pool, 1 node  
+- ACR: Basic SKU  
+- Log Analytics: 30‑day retention  
+- Clean up RGs when done to avoid charges
 
 ## Prerequisites (local)
 - Docker

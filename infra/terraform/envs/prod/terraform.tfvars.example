@@ -1,0 +1,16 @@
+location            = "norwayeast"
+resource_group_name = "p2-rg-prod"
+acr_name            = "p2acrprod12345"
+log_analytics_name  = "p2-law-prod"
+aks_name            = "aks-p2-prod"
+dns_prefix          = "p2prod"
+node_pool_name      = "nodepool1"
+node_count          = 2
+vm_size             = "Standard_D4lds_v5"
+admin_username      = "azureuser"
+ssh_public_key      = "ssh-rsa AAAA..."
+
+tags = {
+  env   = "prod"
+  owner = "ayanle"
+}
