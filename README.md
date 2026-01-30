@@ -15,7 +15,7 @@ OIDC‑based GitHub Actions deployments, and Azure Monitor observability.
 - **Resource limits/requests**
 - **Autoscaling** via **HPA**
 
-## Demo (2 min, local)
+## Demo (local)
 1) Build image
 ```bash
 cd app
