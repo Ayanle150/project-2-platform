@@ -20,14 +20,11 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
-
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Guard - ensure Azure config exists
         run: |
           missing=0
@@ -51,14 +48,27 @@ jobs:
           AKS_RESOURCE_GROUP: ${{ vars.AKS_RESOURCE_GROUP }}
           AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
 
-      - name: Set image tag
-        id: img
+      - name: Generate image tag
+        id: tag
         run: |
           if [ -n "${{ inputs.image_tag }}" ]; then
-            echo "tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+            echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
           else
-            echo "tag=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+            echo "image_tag=${GITHUB_SHA}" >> $GITHUB_OUTPUT
           fi
+
+  build-image:
+    runs-on: ubuntu-latest
+    needs: validate
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image tag output
+        id: tag
+        run: echo "image_tag=${{ needs.validate.outputs.image_tag }}" >> $GITHUB_OUTPUT
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -74,10 +84,25 @@ jobs:
       - name: Build and push image to ACR
         run: |
           ACR="${{ vars.AZURE_ACR_NAME }}.azurecr.io"
-          IMAGE="$ACR/project2-api:${{ steps.img.outputs.tag }}"
+          IMAGE="$ACR/project2-api:${{ steps.tag.outputs.image_tag }}"
 
           docker build -t "$IMAGE" -f app/Dockerfile app
           docker push "$IMAGE"
+
+  deploy-aks:
+    runs-on: ubuntu-latest
+    needs: build-image
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set AKS context
         uses: azure/aks-set-context@v4
@@ -98,7 +123,7 @@ jobs:
           helm upgrade --install project2-api ./project2-api \
             --namespace "$NS" \
             --set image.repository="$ACR/project2-api" \
-            --set image.tag="${{ steps.img.outputs.tag }}"
+            --set image.tag="${{ needs.build-image.outputs.image_tag }}"
 
       - name: Rollout status
         run: |
