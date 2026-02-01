@@ -45,7 +45,7 @@ If you use a different domain than `project2.local`, update the URL.
 ## Repository structure
 - `app/` — FastAPI source + Dockerfile
 - `project2-api/` — Helm chart (single source of truth for k8s resources)
-- `docs/` — architecture + runbook (WIP)
+- `docs/` — architecture + runbook
 - `infra/` — Terraform (dev/prod envs)
 - `.github/workflows/` — CI/CD pipelines (GitHub Actions)
 
@@ -131,7 +131,7 @@ brew install k3d kubectl helm
 ```
 
 This local setup simulates a real platform environment using a lightweight Kubernetes
-distribution (k3d) and the same Helm chart that will later be used in AKS.
+distribution (k3d) and the same Helm chart used in AKS.
 
 ```bash
 Run locally (k3d + Helm)

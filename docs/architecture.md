@@ -91,7 +91,7 @@ graph TD
 
 ---
 
-## Evolution roadmap
+## Delivered capabilities
 
 - Remote Terraform state + environment promotion  
 - OIDC GitHub → Azure authentication  
