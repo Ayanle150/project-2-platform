@@ -166,6 +166,3 @@ kubectl -n p2 get hpa
 - The platform is designed to separate application concerns from platform and infrastructure concerns.
 
 - Local ingress is handled by Traefik shipped with k3d/k3s.
-
-Roadmap
-See ROADMAP.md.

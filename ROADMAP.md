@@ -1,4 +1,4 @@
-# Project roadmap — Platform / DevOps
+# Project scope — Platform / DevOps
 
 ## Phase 1 — Local foundation
 - [x] Repo structure

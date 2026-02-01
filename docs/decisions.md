@@ -34,7 +34,7 @@ This document captures key engineering decisions for the DevOps Platform Stack p
 
 ## ADR-007: Ingress as the entry point
 **Decision:** Use an ingress resource/controller to expose services externally.  
-**Rationale:** Standard Kubernetes routing, TLS termination, and future readiness for multiple services/domains.  
+**Rationale:** Standard Kubernetes routing, TLS termination, and support for multiple services/domains.  
 **Status:** Implemented (ingress routing and TLS strategy defined).
 
 ## ADR-008: Gate Azure CD due to restricted student tenant (Entra ID permissions)
