@@ -1,42 +1,24 @@
-# Project scope — Platform / DevOps
+# Project overview — Platform / DevOps
 
-## Phase 1 — Local foundation
-- [x] Repo structure
-- [x] Minimal API (FastAPI)
-- [x] Docker build + run
-- [x] Local Kubernetes (k3d) deployment
+This repository delivers a complete Azure-first platform engineering stack that demonstrates
+the end-to-end workflow for building, packaging, deploying, and operating a containerized API
+on Kubernetes with Helm and CI/CD.
 
-## Phase 2 — Infrastructure as Code (Terraform)
-- [x] Remote state
-- [x] Network baseline (VNet, subnets, ingress)
-- [x] ACR module
-- [x] AKS module
-- [x] Environment separation (dev/stage/prod)
+## Scope
+- Local developer workflow with Docker and k3d
+- Infrastructure as code using Terraform (separate dev/prod environments)
+- AKS + ACR delivery pipeline with GitHub Actions OIDC
+- Helm-based application release with ingress, probes, and autoscaling
+- Security and operations foundations (RBAC, secrets handling, observability, runbook)
 
-## Phase 3 — Kubernetes platform
-- [x] Helm chart for application
-- [x] Ingress routing
-- [x] Resource limits and probes
-- [x] Autoscaling (HPA)
-- [x] Namespace strategy
-- [x] ConfigMaps and Secrets
+## Key deliverables
+- Terraform environments for AKS, ACR, networking, and remote state
+- CI/CD pipelines for build, push to ACR, and Helm deploys to AKS
+- Helm chart as the single source of truth for Kubernetes resources
+- Documented architecture, ADRs, and operational guidance
 
-## Phase 4 — CI/CD
-- [x] Build and test pipelines
-- [x] Docker image workflow
-- [x] OIDC GitHub → Azure authentication
-- [x] Build and push to ACR
-- [x] Deploy to AKS (Helm)
-- [x] Rollback strategy
-
-## Phase 5 — Security & operations
-- [x] RBAC and least privilege
-- [x] Secrets management improvements
-- [x] Basic observability (logs/metrics)
-- [x] Runbook and troubleshooting guide
-
-## Phase 6 — Portfolio packaging
-- [x] Architecture documentation
-- [x] Final architecture diagram
-- [x] Screenshots and demo steps
-- [x] Interview talking points
+## Evidence in this repo
+- `infra/terraform/` — environment-specific Terraform
+- `.github/workflows/` — CI/CD workflows with OIDC
+- `project2-api/` — Helm chart
+- `docs/` — architecture, decisions, and runbook
